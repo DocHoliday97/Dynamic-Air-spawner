@@ -1,10 +1,12 @@
 ------------------------------------------------------------
--- Dynamic Interceptor v2 (LEAN)
+-- Dynamic Interceptor v2_Mac_Dev (LEAN) 
 ------------------------------------------------------------
 
 ------------------------------------------------------------
 -- CONFIG
 ------------------------------------------------------------
+local DEBUG_MODE = true
+
 local CHECK_INTERVAL = 60
 local SPAWN_DISTANCE = 80000
 local SPAWN_ALT = 8000
@@ -19,12 +21,15 @@ local OPFOR_TYPE     = "MiG-29A"
 ------------------------------------------------------------
 local activeGroupName = nil
 local groupCounter = 1
+local CURRENT_SKILL = "HIGH"
 
 ------------------------------------------------------------
 -- DEBUG
 ------------------------------------------------------------
 local function debug(msg)
-    trigger.action.outText("[DynamicIntercept] " .. msg, 10)
+    if DEBUG_MODE then
+    trigger.action.outText("[Dynamic Air Spawner] " .. tostring(msg), 10)
+    end
 end
 
 ------------------------------------------------------------
@@ -99,7 +104,7 @@ local function spawnInterceptor(players)
     for i = 1, pkg.count do
         groupData.units[i] = {
             type = OPFOR_TYPE,
-            skill = "High",
+            skill = CURRENT_SKILL,
             x = spawnX + (i * 30),
             y = spawnY + (i * 30),
             alt = SPAWN_ALT,
@@ -120,8 +125,9 @@ local function spawnInterceptor(players)
 
     coalition.addGroup(OPFOR_COUNTRY, OPFOR_CATEGORY, groupData)
     activeGroupName = groupName
-    debug("Spawned interceptor: " .. groupName)
+    debug("Spawned interceptor: " .. groupName .. " with skill ".. CURRENT_SKILL)
 end
+
 
 ------------------------------------------------------------
 -- DESPAWN
@@ -129,7 +135,40 @@ end
 local function despawnInterceptor()
     if not isAIAlive() then return end
     Group.getByName(activeGroupName):destroy()
+    debug(activeGroupName.. " Despawned.")
     activeGroupName = nil
+end
+
+------------------------------------------------------------
+-- F10 MENU Functions
+------------------------------------------------------------
+local function setSkill(newSkill)
+CURRENT_SKILL = newSkill
+debug("Skill set to ".. tostring(newSkill))
+end
+
+------------------------------------------------------------
+-- F10 MENU OPTIONS
+------------------------------------------------------------
+local dynamicAirSpawnerRoot = missionCommands.addSubMenuForCoalition(
+    coalition.side.BLUE,
+    "Dynamic Air Spawner"
+)
+local skillSettingsSub = missionCommands.addSubMenuForCoalition(
+        coalition.side.BLUE,
+        "Air Threat Skill",
+        dynamicAirSpawnerRoot
+)
+
+local skillLevels = {"AVERAGE", "GOOD", "HIGH", "EXELLENT"}
+
+for _, skill in ipairs (skillLevels) do
+missionCommands.addCommand(
+    "Set Skill ".. skill,
+    skillSettingsSub,
+    setSkill,
+    skill
+)
 end
 
 ------------------------------------------------------------
@@ -148,5 +187,5 @@ end
 ------------------------------------------------------------
 -- START
 ------------------------------------------------------------
-debug("Dynamic Interceptor initialized")
+debug("airspawn script initialized")
 timer.scheduleFunction(manager, nil, timer.getTime() + 10)
