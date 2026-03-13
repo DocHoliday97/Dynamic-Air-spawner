@@ -1,5 +1,6 @@
 ------------------------------------------------------------
--- Dynamic Interceptor v2_Mac_Dev (LEAN) 
+-- Dynamic Airspawner for DCS
+-- Spawns OPFOR aircraft in the frontline zone based on player presence and type.
 ------------------------------------------------------------
 
 ------------------------------------------------------------
