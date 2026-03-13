@@ -1,6 +1,5 @@
 ------------------------------------------------------------
--- OpFor Air Doctrine Library
--- DATA + DECISION LOGIC (DCS SAFE)
+-- OpFor Aircraft Library
 ------------------------------------------------------------
 
 OpFor = {}  -- GLOBAL ON PURPOSE
