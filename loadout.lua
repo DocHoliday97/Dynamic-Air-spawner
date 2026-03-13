@@ -1241,3 +1241,267 @@
 				} -- end of [4]
 	}
 	table.insert(tblLoadoutPresets, {ut=unitType, us=unitScenario, lp=loadoutPresets})
+--[[ Red Vietnam/70's era presets ]]
+	
+	--[[ MiG-19P pre-sets ]]
+	unitType = "MiG-19P"
+	unitScenario = "ACM_IR"
+	loadoutPresets = {
+				[1] = 
+				{
+					["CLSID"] = "{K-13A}",
+				}, -- end of [1]
+				[2] = 
+				{
+					["CLSID"] = "PTB760_MIG19",
+				}, -- end of [2]
+				[5] = 
+				{
+					["CLSID"] = "PTB760_MIG19",
+				}, -- end of [5]
+				[6] = 
+				{
+					["CLSID"] = "{K-13A}",
+				}, -- end of [6]
+	}
+	table.insert(tblLoadoutPresets, {ut=unitType, us=unitScenario, lp=loadoutPresets})
+
+	unitType = "MiG-19P"
+	unitScenario = "ACM"
+	loadoutPresets = {
+				[5] = 
+				{
+					["CLSID"] = "PTB760_MIG19",
+				}, -- end of [5]
+				[2] = 
+				{
+					["CLSID"] = "PTB760_MIG19",
+				}, -- end of [2]
+	}
+	table.insert(tblLoadoutPresets, {ut=unitType, us=unitScenario, lp=loadoutPresets})
+
+	
+	--[[ MiG-21Bis pre-sets ]]
+	unitType = "MiG-21Bis"
+	unitScenario = "BVR"
+	loadoutPresets = {
+				[1] = 
+				{
+					["CLSID"] = "{R-60M 2L}",
+				}, -- end of [1]
+				[2] = 
+				{
+					["CLSID"] = "{R-3R}",
+				}, -- end of [2]
+				[3] = 
+				{
+					["CLSID"] = "{PTB_800_MIG21}",
+				}, -- end of [3]
+				[4] = 
+				{
+					["CLSID"] = "{R-3R}",
+				}, -- end of [4]
+				[5] = 
+				{
+					["CLSID"] = "{R-60M 2R}",
+				}, -- end of [5]
+				[6] = 
+				{
+					["CLSID"] = "{ASO-2}",
+				} -- end of [6]
+	}
+	table.insert(tblLoadoutPresets, {ut=unitType, us=unitScenario, lp=loadoutPresets})
+
+	unitType = "MiG-21Bis"
+	unitScenario = "ACM_IR_AA"
+	loadoutPresets = {
+				[1] = 
+				{
+					["CLSID"] = "{R-60M}",
+				}, -- end of [1]
+				[2] = 
+				{
+					["CLSID"] = "{R-60M}",
+				}, -- end of [2]
+				[3] = 
+				{
+					["CLSID"] = "{PTB_800_MIG21}",
+				}, -- end of [3]
+				[4] = 
+				{
+					["CLSID"] = "{R-60M}",
+				}, -- end of [4]
+				[5] = 
+				{
+					["CLSID"] = "{R-60M}",
+				}, -- end of [5]
+				[6] = 
+				{
+					["CLSID"] = "{ASO-2}",
+				} -- end of [6]
+	}
+	table.insert(tblLoadoutPresets, {ut=unitType, us=unitScenario, lp=loadoutPresets})
+
+	unitType = "MiG-21Bis"
+	unitScenario = "ACM_IR_RA"
+	loadoutPresets = {
+				[1] = 
+				{
+					["CLSID"] = "{R-3S}",
+				}, -- end of [1]
+				[2] = 
+				{
+					["CLSID"] = "{R-13M1}",
+				}, -- end of [2]
+				[3] = 
+				{
+					["CLSID"] = "{PTB_800_MIG21}",
+				}, -- end of [3]
+				[4] = 
+				{
+					["CLSID"] = "{R-13M1}",
+				}, -- end of [4]
+				[5] = 
+				{
+					["CLSID"] = "{R-3S}",
+				}, -- end of [5]
+				[6] = 
+				{
+					["CLSID"] = "{ASO-2}",
+				}, -- end of [6]
+	}
+	table.insert(tblLoadoutPresets, {ut=unitType, us=unitScenario, lp=loadoutPresets})
+
+	unitType = "MiG-21Bis"
+	unitScenario = "ACM"
+	loadoutPresets = {
+				[3] = 
+				{
+					["CLSID"] = "{PTB_490C_MIG21}",
+				}, -- end of [3]
+				[6] = 
+				{
+					["CLSID"] = "{ASO-2}",
+				} -- end of [6]
+	}
+	table.insert(tblLoadoutPresets, {ut=unitType, us=unitScenario, lp=loadoutPresets})
+	
+	--[[ MiG-23MLD pre-sets ]]
+	unitType = "MiG-23MLD"
+	unitScenario = "BVR"
+	loadoutPresets = {
+				[2] = 
+				{
+					["CLSID"] = "{CCF898C9-5BC7-49A4-9D1E-C3ED3D5166A1}",
+				}, -- end of [2]
+				[3] = 
+				{
+					["CLSID"] = "{B0DBC591-0F52-4F7D-AD7B-51E67725FB81}",
+				}, -- end of [3]
+				[4] = 
+				{
+					["CLSID"] = "{A5BAEAB7-6FAF-4236-AF72-0FD900F493F9}",
+				}, -- end of [4]
+				[5] = 
+				{
+					["CLSID"] = "{275A2855-4A79-4B2D-B082-91EA2ADF4691}",
+				}, -- end of [5]
+				[6] = 
+				{
+					["CLSID"] = "{CCF898C9-5BC7-49A4-9D1E-C3ED3D5166A1}",
+				} -- end of [6]
+	}
+	table.insert(tblLoadoutPresets, {ut=unitType, us=unitScenario, lp=loadoutPresets})
+
+	unitType = "MiG-23MLD"
+	unitScenario = "ACM_IR"
+	loadoutPresets = {
+				[3] = 
+				{
+					["CLSID"] = "{B0DBC591-0F52-4F7D-AD7B-51E67725FB81}",
+				}, -- end of [3]
+				[4] = 
+				{
+					["CLSID"] = "{A5BAEAB7-6FAF-4236-AF72-0FD900F493F9}",
+				}, -- end of [4]
+				[5] = 
+				{
+					["CLSID"] = "{275A2855-4A79-4B2D-B082-91EA2ADF4691}",
+				} -- end of [5]
+	}
+	table.insert(tblLoadoutPresets, {ut=unitType, us=unitScenario, lp=loadoutPresets})
+
+	unitType = "MiG-23MLD"
+	unitScenario = "ACM"
+	loadoutPresets = {
+	}
+	table.insert(tblLoadoutPresets, {ut=unitType, us=unitScenario, lp=loadoutPresets})
+	
+	--[[ Mirage-F1CE pre-sets ]]
+	unitType = "Mirage-F1CE"
+	unitScenario = "BVR"
+	loadoutPresets = {
+				[1] = 
+				{
+					["CLSID"] = "{R550_Magic_1}",
+				}, -- end of [1]
+				[3] = 
+				{
+					["CLSID"] = "{R530F_EM}",
+				}, -- end of [3]
+				[4] = 
+				{
+					["CLSID"] = "PTB-1200-F1",
+				}, -- end of [4]
+				[5] = 
+				{
+					["CLSID"] = "{R530F_EM}",
+				}, -- end of [5]
+				[7] = 
+				{
+					["CLSID"] = "{R550_Magic_1}",
+				} -- end of [7]
+	}
+	table.insert(tblLoadoutPresets, {ut=unitType, us=unitScenario, lp=loadoutPresets})
+
+	unitType = "Mirage-F1CE"
+	unitScenario = "ACM_IR_AA"
+	loadoutPresets = {
+				[1] = 
+				{
+					["CLSID"] = "{R550_Magic_1}",
+				}, -- end of [1]
+				[7] = 
+				{
+					["CLSID"] = "{R550_Magic_1}",
+				}, -- end of [7]
+				[4] = 
+				{
+					["CLSID"] = "PTB-1200-F1",
+				} -- end of [4]
+	}
+	table.insert(tblLoadoutPresets, {ut=unitType, us=unitScenario, lp=loadoutPresets})
+
+	unitType = "Mirage-F1CE"
+	unitScenario = "ACM_IR_RA"
+	loadoutPresets = {
+				[1] = 
+				{
+					["CLSID"] = "{9BFD8C90-F7AE-4e90-833B-BFD0CED0E536}",
+				}, -- end of [1]
+				[7] = 
+				{
+					["CLSID"] = "{9BFD8C90-F7AE-4e90-833B-BFD0CED0E536}",
+				}, -- end of [7]
+				[4] = 
+				{
+					["CLSID"] = "PTB-1200-F1",
+				}, -- end of [4]
+	}
+	table.insert(tblLoadoutPresets, {ut=unitType, us=unitScenario, lp=loadoutPresets})
+
+	unitType = "Mirage-F1CE"
+	unitScenario = "ACM"
+	loadoutPresets = {
+	}
+	table.insert(tblLoadoutPresets, {ut=unitType, us=unitScenario, lp=loadoutPresets})
