@@ -1,3 +1,14 @@
+-- ╔════════════════════════════════════════════════════════════════════════════╗
+-- ║  Script: Air_lib.lua                                                       ║
+-- ║  Author: Doc                                                               ║
+-- ║                                                                            ║
+-- ║  Important Info:                                                           ║
+-- ║   - Defines OPFOR aircraft, scenarios, loadouts, and spawn settings.       ║
+-- ║   - Must be loaded BEFORE DynamicAirSpawner.lua.                           ║
+-- ║   - Main APIs: getSpawnPackage(), getSpawnPackageForScenario(),            ║
+-- ║                getThreatTypeForPlayer(), getSpawnSettings().               ║
+-- ╚════════════════════════════════════════════════════════════════════════════╝
+
 ------------------------------------------------------------
 -- OpFor Aircraft Library
 ------------------------------------------------------------
@@ -54,10 +65,8 @@ function OpFor.pickScenario(distance)
         return "BVR_LR"
     elseif distance > 20000 then
         return "BVR_MR"
-    elseif distance > 12000 then
-        return "ACM_IR"
     else
-        return "ACM"
+        return "ACM_IR"
     end
 end
 
@@ -69,15 +78,44 @@ local function findAvailableLoadout(unitType, preferredScenario)
         return nil, nil
     end
 
-    local try = {
-        preferredScenario,
-        "ACM_IR",
-        "ACM",
-        "BVR_LR",
-        "BVR_MR",
-        "BVR_LRE",
-        "BVR",
-    }
+    if preferredScenario == "ACM" then
+        preferredScenario = "ACM_IR"
+    end
+
+    local try = {}
+    local function addScenario(name)
+        if not name then
+            return
+        end
+        for _, existing in ipairs(try) do
+            if existing == name then
+                return
+            end
+        end
+        table.insert(try, name)
+    end
+
+    addScenario(preferredScenario)
+
+    if preferredScenario and preferredScenario:find("^BVR") then
+        addScenario("BVR_LRE")
+        addScenario("BVR_LR")
+        addScenario("BVR_MR")
+        addScenario("BVR")
+        addScenario("ACM_IR")
+    elseif preferredScenario and preferredScenario:find("^ACM") then
+        addScenario("ACM_IR")
+        addScenario("BVR_MR")
+        addScenario("BVR_LR")
+        addScenario("BVR_LRE")
+        addScenario("BVR")
+    else
+        addScenario("BVR_LRE")
+        addScenario("BVR_LR")
+        addScenario("BVR_MR")
+        addScenario("BVR")
+        addScenario("ACM_IR")
+    end
 
     for _, s in ipairs(try) do
         if s and OpFor.loadouts[unitType][s] then
@@ -95,6 +133,29 @@ function OpFor.getSpawnPackage(unitType, distance)
 
     local scenario = OpFor.pickScenario(distance)
     local pickScenario, pylons = findAvailableLoadout(unitType, scenario)
+    if not pylons then
+        return nil
+    end
+
+    return {
+        scenario = pickScenario,
+        count    = ac.count,
+        fuel     = ac.fuel,
+        flares   = ac.flares,
+        chaff    = ac.chaff,
+        gun      = ac.gun,
+        livery   = ac.livery,
+        pylons   = pylons
+    }
+end
+
+function OpFor.getSpawnPackageForScenario(unitType, preferredScenario)
+    local ac = OpFor.aircraft[unitType]
+    if not ac then
+        return nil
+    end
+
+    local pickScenario, pylons = findAvailableLoadout(unitType, preferredScenario)
     if not pylons then
         return nil
     end
@@ -134,11 +195,15 @@ end
 function OpFor.getThreatTypeForPlayer(playerType)
     local pt = (playerType or ""):lower()
 
+    if pt:find("f%-4") then
+        return "MiG-15bis"
+    end
+
     if pt:find("a%-10") or pt:find("su%-25") or pt:find("su%-39") or pt:find("su%-34") or pt:find("su%-24") then
         return pickDynamicThreat(OpFor.threatTypeForPlayer.groundAttack, pt)
     end
 
-    if pt:find("f%-16") or pt:find("f%-18") or pt:find("f%-15") or pt:find("f%-14") or pt:find("f%-22") or pt:find("fa%-18") or pt:find("f%-4") or pt:find("f%-86") then
+    if pt:find("f%-16") or pt:find("f%-18") or pt:find("f%-15") or pt:find("f%-14") or pt:find("f%-22") or pt:find("fa%-18") or pt:find("f%-86") then
         return pickDynamicThreat(OpFor.threatTypeForPlayer.fighter, pt)
     end
 
@@ -163,6 +228,7 @@ OpFor.spawnSettings = {
     ["H-6J"]   = {dist={80000,140000}, alt={3000,10000}, speed={180,250}},
     ["Ka-50"]  = {dist={20000,50000}, alt={2000,6000}, speed={150,230}},
     ["L-39ZA"] = {dist={20000,70000}, alt={2000,9000}, speed={180,260}},
+    ["MiG-15bis"] = {dist={20000,55000}, alt={2500,9000}, speed={180,260}},
     ["Mi-24P"] = {dist={20000,60000}, alt={2000,9000}, speed={150,240}},
     ["Mi-26"]  = {dist={20000,60000}, alt={2000,9000}, speed={120,210}},
     ["Mi-28N"] = {dist={25000,70000}, alt={2000,9000}, speed={170,250}},
@@ -207,6 +273,7 @@ OpFor.addAircraft({ ut = "Mi-24P", fu = 2500, fl = 30, ch = 30, li = "Air Force 
 OpFor.addAircraft({ ut = "Mi-26", fu = 2500, fl = 30, ch = 30, li = "Air Force Standard", ct = 3 })
 OpFor.addAircraft({ ut = "Mi-28N", fu = 2500, fl = 30, ch = 30, li = "Air Force Standard", ct = 3 })
 OpFor.addAircraft({ ut = "Mi-8MT", fu = 2500, fl = 30, ch = 30, li = "Air Force Standard", ct = 3 })
+OpFor.addAircraft({ ut = "MiG-15bis", fu = 2500, fl = 30, ch = 30, li = "Air Force Standard", ct = 2 })
 OpFor.addAircraft({ ut = "MiG-29A", fu = 3000, fl = 30, ch = 30, li = "Air Force Standard", ct = 2 })
 OpFor.addAircraft({ ut = "MiG-29S", fu = 3000, fl = 30, ch = 30, li = "Air Force Standard", ct = 2 })
 OpFor.addAircraft({ ut = "MiG-31", fu = 3000, fl = 30, ch = 30, li = "Air Force Standard", ct = 2 })
@@ -234,20 +301,34 @@ OpFor.addLoadout("Ka-50", "ACM", {
     [4] = { CLSID = "{A6FD14D3-6D30-4C85-88A7-8D17BEE120E2}" },
 })
 OpFor.addLoadout("L-39ZA", "ACM", {
+    [1] = { CLSID = "{APU-60-1_R_60M}" },
+    [2] = { CLSID = "{PTB_150L_L39}" },
+    [4] = { CLSID = "{PTB_150L_L39}" },
+    [5] = { CLSID = "{APU-60-1_R_60M}" },
+})
+OpFor.addLoadout("L-39ZA", "ACM_IR", {
+    [1] = { CLSID = "{APU-60-1_R_60M}" },
+    [2] = { CLSID = "{PTB_150L_L39}" },
+    [4] = { CLSID = "{PTB_150L_L39}" },
+    [5] = { CLSID = "{APU-60-1_R_60M}" },
 })
 OpFor.addLoadout("L-39ZA", "ACM_IR_AA", {
     [1] = { CLSID = "{APU-60-1_R_60M}" },
-    [2] = { CLSID = "{APU-60-1_R_60M}" },
+    [2] = { CLSID = "{PTB_150L_L39}" },
+    [4] = { CLSID = "{PTB_150L_L39}" },
+    [5] = { CLSID = "{APU-60-1_R_60M}" },
 })
 OpFor.addLoadout("L-39ZA", "ACM_IR_RA", {
     [1] = { CLSID = "{R-3S}" },
-    [2] = { CLSID = "{R-3S}" },
+    [2] = { CLSID = "{PTB_150L_L39}" },
+    [4] = { CLSID = "{PTB_150L_L39}" },
+    [5] = { CLSID = "{R-3S}" },
 })
 OpFor.addLoadout("L-39ZA", "BVR", {
     [1] = { CLSID = "{APU-60-1_R_60M}" },
-    [2] = { CLSID = "{PK-3}" },
-    [3] = { CLSID = "{PK-3}" },
-    [4] = { CLSID = "{APU-60-1_R_60M}" },
+    [2] = { CLSID = "{PTB_150L_L39}" },
+    [4] = { CLSID = "{PTB_150L_L39}" },
+    [5] = { CLSID = "{APU-60-1_R_60M}" },
 })
 OpFor.addLoadout("Mi-24P", "ACM", {
     [1] = { CLSID = "{2x9M120_Ataka_V}" },
@@ -282,6 +363,8 @@ OpFor.addLoadout("Mi-8MT", "ACM", {
     [6] = { CLSID = "{6A4B9E69-64FE-439a-9163-3A87FB6A4D81}" },
     [7] = { CLSID = "KORD_12_7" },
     [8] = { CLSID = "PKT_7_62" },
+})
+OpFor.addLoadout("MiG-15bis", "ACM_IR", {
 })
 OpFor.addLoadout("MiG-29A", "ACM", {
 })
@@ -325,7 +408,7 @@ OpFor.addLoadout("MiG-31", "ACM", {
 })
 OpFor.addLoadout("MiG-31", "ACM_IR", {
     [1] = { CLSID = "{B0DBC591-0F52-4F7D-AD7B-51E67725FB81}" },
-    [2] = { CLSID = "{275A2855-4A79-4B2D-B082-91EA2ADF4691}" },
+    [6] = { CLSID = "{275A2855-4A79-4B2D-B082-91EA2ADF4691}" },
 })
 OpFor.addLoadout("MiG-31", "BVR", {
     [1] = { CLSID = "{5F26DBC2-FB43-4153-92DE-6BBCE26CB0FF}" },
