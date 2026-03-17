@@ -10,8 +10,8 @@
 -- ║   loadout-aware scenario selection from Air_lib.lua.                       ║
 -- ║                                                                            ║
 -- ║  How to Use:                                                               ║
--- ║   1. In Mission Editor, create a trigger zone named "Frontline"            ║
--- ║      (or change FRONTLINE_ZONE below).                                     ║
+-- ║   1. In Mission Editor, create one or more trigger zones for spawning      ║
+-- ║      and list their names in FRONTLINE_ZONES below.                        ║
 -- ║   2. Add a MISSION START trigger with actions in this order:               ║
 -- ║        • DO SCRIPT FILE -> Air_lib.lua                                     ║
 -- ║        • DO SCRIPT FILE -> DynamicAirSpawner.lua                           ║
@@ -20,10 +20,13 @@
 -- ║                                                                            ║
 -- ║  Config Quick Reference:                                                   ║
 -- ║   DEBUG_MODE         : Debug text + F10 "Spawn Threat Now" command.        ║
--- ║   FRONTLINE_ZONE     : Trigger zone name used for spawn sampling.          ║
+-- ║   FRONTLINE_ZONES    : Trigger zone names used for spawn sampling.         ║
 -- ║   SPAWN_COOLDOWN     : Minimum seconds between spawn events.               ║
 -- ║   SPAWN_MIN_INTERVAL : Min seconds between manager loop ticks.             ║
 -- ║   SPAWN_MAX_INTERVAL : Max seconds between manager loop ticks.             ║
+-- ║   MAX_ACTIVE_GROUPS  : Maximum simultaneous spawned threat groups.        ║
+-- ║   SPAWN_GROUP_OPTIONS: Possible aircraft counts for each spawned group.   ║
+-- ║   MAX_AIRCRAFT_PER_GROUP : Maximum aircraft per spawned group.            ║
 -- ║   SPAWN_ALT_MIN_M    : Global minimum spawn altitude clamp (meters).       ║
 -- ║   SPAWN_ALT_MAX_M    : Global maximum spawn altitude clamp (meters).       ║
 -- ║   FORCE_FIGHTER_BVR  : Forces fighter threats into BVR scenario families.  ║
@@ -41,9 +44,14 @@ local DEBUG_MODE = false
 
 local CHECK_INTERVAL = 30
 local SPAWN_COOLDOWN = 90
-local FRONTLINE_ZONE = "Frontline"
+local FRONTLINE_ZONES = {
+    "Frontline"
+}
 local SPAWN_MIN_INTERVAL = 180
-local SPAWN_MAX_INTERVAL = 1800
+local SPAWN_MAX_INTERVAL = 1200
+local MAX_ACTIVE_GROUPS = 20
+local SPAWN_GROUP_OPTIONS = { 2, 2, 2, 2, 4 }
+local MAX_AIRCRAFT_PER_GROUP = 4
 local SPAWN_ALT_MIN_M = 1500
 local SPAWN_ALT_MAX_M = 8500
 local FORCE_FIGHTER_BVR = true
@@ -272,11 +280,53 @@ local function getRandomPointInZone(zoneName)
     return nil
 end
 
+local function getRandomSpawnZoneData()
+    local validZones = {}
+
+    for _, zoneName in ipairs(FRONTLINE_ZONES or {}) do
+        local zone = trigger.misc.getZone(zoneName)
+        local point = getRandomPointInZone(zoneName)
+        if zone and point then
+            validZones[#validZones + 1] = {
+                name = zoneName,
+                zone = zone,
+                point = point,
+            }
+        else
+            debug("Spawn zone unavailable: " .. tostring(zoneName))
+        end
+    end
+
+    if #validZones == 0 then
+        return nil
+    end
+
+    return validZones[math.random(1, #validZones)]
+end
+
 local function getPlayerType(unit)
     if not unit or not unit.getTypeName then
         return nil
     end
     return unit:getTypeName() or ""
+end
+
+local function getSpawnCountForPlayers(playerCount, packageCount)
+    local fallbackCount = clamp(math.max(1, packageCount or 1), 1, MAX_AIRCRAFT_PER_GROUP)
+    local validOptions = {}
+
+    for _, option in ipairs(SPAWN_GROUP_OPTIONS or {}) do
+        local count = tonumber(option)
+        if count and count >= 1 then
+            validOptions[#validOptions + 1] = clamp(math.floor(count), 1, MAX_AIRCRAFT_PER_GROUP)
+        end
+    end
+
+    if #validOptions == 0 then
+        return fallbackCount
+    end
+
+    return validOptions[math.random(1, #validOptions)]
 end
 
 local function getThreatTypeForPlayer(playerType)
@@ -690,8 +740,8 @@ local function cleanupActiveGroups()
 end
 
 local function maxGroupLimitForPlayers(playerCount)
-    -- Allow up to 1 group per 3 players, clamped 1..4
-    return math.max(1, math.min(4, math.ceil(playerCount / 3)))
+    -- Allow up to 1 group per 3 players, capped by config.
+    return math.max(1, math.min(MAX_ACTIVE_GROUPS, math.ceil(playerCount / 3)))
 end
 
 local function isGroupLimitReached(playerCount)
@@ -701,15 +751,18 @@ local function isGroupLimitReached(playerCount)
 end
 
 local function spawnThreatForPlayers(players)
-    local zonePoint = getRandomPointInZone(FRONTLINE_ZONE)
-    local spawnZone = trigger.misc.getZone(FRONTLINE_ZONE)
-    if not zonePoint then
-        debug("Frontline zone not found: FRONTLINE_ZONE")
+    local spawnZoneData = getRandomSpawnZoneData()
+    if not spawnZoneData then
+        debug("No valid spawn zones found in FRONTLINE_ZONES")
         return
     end
 
+    local zonePoint = spawnZoneData.point
+    local spawnZone = spawnZoneData.zone
+    local spawnZoneName = spawnZoneData.name
+
     if spawnZone then
-        debug("Frontline zone sample point x=" .. string.format("%.1f", zonePoint.x) .. " z=" .. string.format("%.1f", zonePoint.z)
+        debug("Spawn zone " .. tostring(spawnZoneName) .. " sample point x=" .. string.format("%.1f", zonePoint.x) .. " z=" .. string.format("%.1f", zonePoint.z)
             .. " (vertices=" .. tostring(spawnZone.vertices and #spawnZone.vertices or 0)
             .. ", radius=" .. tostring(spawnZone.radius) .. ")")
     end
@@ -748,7 +801,7 @@ local function spawnThreatForPlayers(players)
     local angle = math.random() * 2 * math.pi
 
     if not pointInZone(spawnZone, spawnX, spawnZ) then
-        local fallbackPoint = getRandomPointInZone(FRONTLINE_ZONE)
+        local fallbackPoint = getRandomPointInZone(spawnZoneName)
         if fallbackPoint then
             spawnX = fallbackPoint.x
             spawnZ = fallbackPoint.z
@@ -774,12 +827,8 @@ local function spawnThreatForPlayers(players)
         .. " -> scenarioRequested=" .. tostring(scenarioRequest or preferredScenario or "auto")
         .. ", scenarioUsed=" .. tostring(pkg.scenario or "auto"))
 
-    local desiredCount = math.min(#players, 3)
-    if #players <= 2 then
-        desiredCount = math.min(2, #players)
-    end
     local packageCount = pkg.count or 1
-    local spawnCount = math.min(desiredCount, packageCount)
+    local spawnCount = getSpawnCountForPlayers(#players, packageCount)
 
     if spawnCount <= 0 then
         debug("Zero aircraft for spawn package")
@@ -828,11 +877,11 @@ local function spawnThreatForPlayers(players)
         local unitZ= spawnZ + math.sin(angle + math.pi/2) * offset
 
         if not pointInZone(spawnZone, unitX, unitZ) then
-            local fallbackPoint = getRandomPointInZone(FRONTLINE_ZONE)
+            local fallbackPoint = getRandomPointInZone(spawnZoneName)
             if fallbackPoint then
                 unitX = fallbackPoint.x
                 unitZ = fallbackPoint.z
-                debug("Adjusted unit " .. i .. " to remain in Frontline zone")
+                debug("Adjusted unit " .. i .. " to remain in spawn zone " .. tostring(spawnZoneName))
             else
                 unitX = spawnX
                 unitZ = spawnZ
@@ -871,9 +920,9 @@ local function spawnThreatForPlayers(players)
     coalition.addGroup(OPFOR_COUNTRY, OPFOR_CATEGORY, groupData)
     table.insert(activeGroups, groupName)
 
-    local summary = string.format("Spawned %s x%d in Frontline zone (%s)", threatType, spawnCount, playerType or "unknown")
-    trigger.action.outText("[Dynamic Air Spawner] " .. summary, 8)
-    debug("Spawned " .. threatType .. " threat group " .. groupName .. " for " .. playerType .. " (players=" .. #players .. ", aircraft=" .. spawnCount .. ")")
+    local summary = string.format("Spawned %s x%d in zone %s (%s)", threatType, spawnCount, spawnZoneName, playerType or "unknown")
+    debug(summary)
+    debug("Spawned " .. threatType .. " threat group " .. groupName .. " for " .. playerType .. " (players=" .. #players .. ", packageCount=" .. packageCount .. ", aircraft=" .. spawnCount .. ")")
 end
 
 local function groupIsLandedOrDead(groupName)
